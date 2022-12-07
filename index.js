@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 const { resolve } = require("path");
 // This is your real test secret API key.
-const stripe = require("stripe")("sk_test_51M0SpXCSNniMvPRnzo5ub1b01C6xrQIZvfVc9KmGIQVbOKg1agbLHFvopVR9gQ0JLBcUXCdeaTQpKlFpyZBEwObJ00qpFvzeJQ");
+const stripe = require("stripe")("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");
 app.use(express.static("."));
 app.use(express.json());
 const calculateOrderAmount = items => {
@@ -17,7 +17,7 @@ app.post("/create-payment-intent", async (req, res) => {
 
   // Create a PaymentIntent with the order amount and currency
   const paymentIntent = await stripe.paymentIntents.create({
-    amount: calculateOrderAmount(items),
+    amount: 10000,
     currency: currency
   });
   res.send({
@@ -27,5 +27,29 @@ app.post("/create-payment-intent", async (req, res) => {
 app.get('/greet',(req,res)=>{
   res.send("It is working fine")
 })
-const PORT = 4242;
+
+
+app.post('/payment-sheet', async (req, res) => {
+  // Use an existing Customer ID if this is a returning customer.
+  const customer = await stripe.customers.create();
+  const ephemeralKey = await stripe.ephemeralKeys.create(
+    {customer: customer.id},
+    {apiVersion: '2022-08-01'}
+  );
+  const paymentIntent = await stripe.paymentIntents.create({
+    amount: 10000,
+    currency: 'INR',
+    customer: customer.id,
+    payment_method_types: ['card']  });
+
+  res.json({
+    paymentIntent: paymentIntent.client_secret,
+    ephemeralKey: ephemeralKey.secret,
+    customer: customer.id,
+    publishableKey: "pk_live_51M0SpXCSNniMvPRn9UJEnvEEUoTukerDRmDLBdfJhqBmMWwkaV5MuhMkc25UycEPxEnYp0dxFd3BaUx7li4tjUYu003qcRLgGy"
+
+  });
+});
+
+const PORT = 80;
 app.listen(PORT, () => console.log('Node server listening on port ${PORT}'));
