@@ -28,6 +28,9 @@ app.get('/greet',(req,res)=>{
   res.send("It is working fine")
 })
 
+app.get("/test",(req,res)=>{
+  res.send("It is working fine")
+})
 
 app.post('/payment-sheet', async (req, res) => {
   // Use an existing Customer ID if this is a returning customer.
